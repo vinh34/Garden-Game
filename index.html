@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vườn Trái Cây - Scan & Trồng</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="game-container">
+    <!-- HUD -->
+    <header class="hud">
+      <div class="hud-left">
+        <span class="money">💰 <strong id="money">100</strong></span>
+        <span class="scans">📷 Lượt quét: <strong id="scan-count">5</strong></span>
+        <span class="water">💧 Nước: <strong id="water-count">3</strong></span>
+        <span class="fertilizer">🌱 Phân: <strong id="fertilizer-count">2</strong></span>
+      </div>
+      <div class="weather" id="weather">
+        <span class="weather-icon">☀️</span>
+        <span class="weather-text">Nắng</span>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="garden">🌳 Vườn</button>
+      <button class="tab" data-tab="scan">📷 Quét</button>
+      <button class="tab" data-tab="shop">🛒 Cửa hàng</button>
+      <button class="tab" data-tab="inventory">🎒 Túi đồ</button>
+    </nav>
+
+    <!-- Panel Vườn -->
+    <section id="panel-garden" class="panel active">
+      <div class="garden-wrapper">
+        <div class="garden-grid" id="garden-grid"></div>
+        <div class="garden-actions" id="garden-actions">
+          <p class="hint">Chọn một ô đất trống để trồng, hoặc ô có cây để chăm sóc / thu hoạch.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel Quét camera -->
+    <section id="panel-scan" class="panel">
+      <div class="scan-wrapper">
+        <div class="camera-container">
+          <video id="camera-video" autoplay playsinline muted></video>
+          <img id="scan-image-preview" class="scan-image-preview" alt="Xem trước ảnh" style="display:none">
+          <canvas id="scan-canvas" style="display:none"></canvas>
+          <div class="camera-overlay" id="camera-overlay">
+            <p>Hướng camera vào trái cây hoặc cây</p>
+            <button id="btn-scan" class="btn btn-scan" disabled>Quét (đang tải AI...)</button>
+          </div>
+        </div>
+        <div class="scan-fallback">
+          <p class="scan-fallback-label">Camera không hoạt động? Dùng ảnh có sẵn:</p>
+          <input type="file" id="scan-file-input" accept="image/*" style="display:none">
+          <button type="button" id="btn-upload-image" class="btn btn-upload" disabled>📷 Chọn ảnh</button>
+        </div>
+        <div class="scan-result" id="scan-result"></div>
+      </div>
+    </section>
+
+    <!-- Panel Cửa hàng -->
+    <section id="panel-shop" class="panel">
+      <div class="shop-wrapper">
+        <h2>🛒 Cửa hàng</h2>
+        <div class="shop-items" id="shop-items"></div>
+      </div>
+    </section>
+
+    <!-- Panel Túi đồ -->
+    <section id="panel-inventory" class="panel">
+      <div class="inventory-wrapper">
+        <h2>🎒 Hạt giống & Sản phẩm</h2>
+        <div class="seeds-list" id="seeds-list"></div>
+        <div class="products-list" id="products-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal chi tiết ô / chăm sóc -->
+  <div class="modal" id="cell-modal">
+    <div class="modal-content">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal thông tin cây sau khi quét -->
+  <div class="modal" id="plant-info-modal">
+    <div class="modal-content modal-plant-info">
+      <button class="modal-close" id="plant-info-close">&times;</button>
+      <div id="plant-info-body"></div>
+      <button type="button" class="btn btn-plant" id="plant-info-ok">Tuyệt!</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/camera-ai.js"></script>
+  <script src="js/garden.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
