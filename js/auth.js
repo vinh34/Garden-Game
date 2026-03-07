@@ -1,12 +1,38 @@
 /**
- * Đăng nhập / đăng ký và đồng bộ tiến trình lên server
+ * Đăng nhập / đăng ký và lưu tiến trình bằng Supabase (Auth + Database)
+ * Cấu hình: đặt window.SUPABASE_URL và window.SUPABASE_ANON_KEY trong index.html
  */
 
 const AUTH_TOKEN_KEY = 'vuon_trai_cay_token';
 const AUTH_EMAIL_KEY = 'vuon_trai_cay_email';
+const SAVES_TABLE = 'game_saves';
 
-// Đổi thành địa chỉ server của bạn khi deploy (ví dụ: https://api.example.com)
-const API_BASE = window.VUON_API_BASE || '';
+let supabase = null;
+
+function getSupabase() {
+  if (supabase) return supabase;
+  const url = window.SUPABASE_URL || '';
+  const key = window.SUPABASE_ANON_KEY || '';
+  if (!url || !key) return null;
+  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+    supabase = window.supabase.createClient(url, key);
+    return supabase;
+  }
+  return null;
+}
+
+/** Gọi khi trang load để khôi phục session từ Supabase */
+async function initAuth() {
+  const sb = getSupabase();
+  if (!sb) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      localStorage.setItem(AUTH_TOKEN_KEY, session.access_token);
+      localStorage.setItem(AUTH_EMAIL_KEY, session.user?.email || '');
+    }
+  } catch (_) {}
+}
 
 function getToken() {
   return localStorage.getItem(AUTH_TOKEN_KEY);
@@ -30,53 +56,79 @@ function isLoggedIn() {
   return !!getToken();
 }
 
-async function request(method, path, body, needAuth = true) {
-  const url = (API_BASE + path).replace(/([^:]\/)\/+/g, '$1');
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const token = getToken();
-  if (needAuth && token) opts.headers.Authorization = 'Bearer ' + token;
-  const res = await fetch(url, opts);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Lỗi kết nối');
-  return data;
-}
-
 async function login(email, password) {
-  const data = await request('POST', '/api/login', { email, password }, false);
-  setToken(data.token, data.email);
-  return data;
+  const sb = getSupabase();
+  if (!sb) throw new Error('Chưa cấu hình Supabase. Thêm SUPABASE_URL và SUPABASE_ANON_KEY.');
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: (email || '').trim().toLowerCase(),
+    password: password || '',
+  });
+  if (error) throw new Error(error.message === 'Invalid login credentials' ? 'Email hoặc mật khẩu không đúng' : error.message);
+  setToken(data.session.access_token, data.user.email);
+  return { token: data.session.access_token, email: data.user.email };
 }
 
 async function register(email, password) {
-  const data = await request('POST', '/api/register', { email, password }, false);
-  setToken(data.token, data.email);
-  return data;
+  const sb = getSupabase();
+  if (!sb) throw new Error('Chưa cấu hình Supabase. Thêm SUPABASE_URL và SUPABASE_ANON_KEY.');
+  const { data, error } = await sb.auth.signUp({
+    email: (email || '').trim().toLowerCase(),
+    password: password || '',
+    options: { emailRedirectTo: undefined },
+  });
+  if (error) {
+    const msg = error.message || '';
+    if (msg.includes('already registered')) throw new Error('Email đã được sử dụng');
+    throw new Error(error.message);
+  }
+  if (data.session) {
+    setToken(data.session.access_token, data.user.email);
+    return { token: data.session.access_token, email: data.user.email };
+  }
+  throw new Error('Đăng ký thành công. Vui lòng kiểm tra email xác thực (nếu bật) hoặc đăng nhập.');
 }
 
 async function loadSaveFromServer() {
-  if (!getToken()) return null;
+  const sb = getSupabase();
+  if (!sb || !getToken()) return null;
   try {
-    const data = await request('GET', '/api/save');
-    return data.save || null;
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return null;
+    const { data, error } = await sb
+      .from(SAVES_TABLE)
+      .select('save_data')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (error) return null;
+    return (data && data.save_data) ? data.save_data : null;
   } catch {
     return null;
   }
 }
 
 async function saveGameToServer(saveData) {
-  if (!getToken()) return false;
+  const sb = getSupabase();
+  if (!sb || !getToken()) return false;
   try {
-    await request('PUT', '/api/save', saveData);
-    return true;
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return false;
+    const { error } = await sb
+      .from(SAVES_TABLE)
+      .upsert({
+        user_id: user.id,
+        save_data: saveData,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    return !error;
   } catch {
     return false;
   }
 }
 
-function logout() {
+async function logout() {
+  const sb = getSupabase();
+  if (sb) {
+    try { await sb.auth.signOut(); } catch (_) {}
+  }
   removeToken();
 }

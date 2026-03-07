@@ -120,8 +120,12 @@
     </div>
   </div>
 
-  <!-- Đổi thành URL server API khi deploy (ví dụ: https://api.example.com) -->
-  <script>window.VUON_API_BASE = window.VUON_API_BASE || 'http://localhost:3001';</script>
+  <!-- Cấu hình Supabase: lấy từ Dashboard → Project Settings → API -->
+  <script>
+    window.SUPABASE_URL = window.SUPABASE_URL || 'https://xqsqyfaqxcllebuqolxw.supabase.co';     // https://xxxxx.supabase.co
+    window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhxc3F5ZmFxeGNsbGVidXFvbHh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NTg3OTQsImV4cCI6MjA4ODQzNDc5NH0.ir9CZOBSM85INJieC38X-8bFgx1oVOIyjcZwS60sFek'; // anon public key
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
   <script src="js/auth.js"></script>

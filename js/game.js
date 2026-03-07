@@ -560,6 +560,7 @@ async function setupAuth() {
 }
 
 async function init() {
+  if (typeof initAuth === 'function') await initAuth();
   initGarden();
   if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof loadSaveFromServer === 'function') {
     try {

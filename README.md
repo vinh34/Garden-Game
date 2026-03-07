@@ -16,14 +16,22 @@ Game web: quét camera trái cây/cây → AI nhận diện → nhận hạt gi�
 
 - Cần **HTTPS** hoặc **localhost** để trình duyệt cho phép camera.
 - **Chỉ chơi (không đăng nhập):** mở bằng server tĩnh, ví dụ `npx serve .` rồi mở http://localhost:3000. Tiến trình lưu trên máy (localStorage).
-- **Có đăng nhập để lưu tiến trình lên server:**
-  1. Chạy API: `cd server` → `npm install` → `npm start` (mặc định http://localhost:3001).
-  2. Chạy game: từ thư mục gốc `npx serve .` (hoặc port khác), mở http://localhost:3000.
-  3. Trong game bấm **Đăng nhập** → chọn **Đăng ký** (tạo tài khoản) hoặc **Đăng nhập** (email + mật khẩu). Sau khi đăng nhập, tiến trình tự lưu lên server và khi vào lại (cùng tài khoản) sẽ tải bản đã lưu.
+- **Đăng nhập & lưu tiến trình bằng Supabase:**
+  1. Tạo project tại [supabase.com](https://supabase.com) (miễn phí).
+  2. Trong Dashboard → **SQL Editor**, chạy nội dung file `supabase-setup.sql` để tạo bảng `game_saves` và bật RLS.
+  3. Trong **Project Settings → API** lấy **Project URL** và **anon public** key.
+  4. Trong `index.html`, đặt cấu hình (trước khi load script):
+     ```html
+     <script>
+       window.SUPABASE_URL = 'https://xxxxx.supabase.co';
+       window.SUPABASE_ANON_KEY = 'eyJhbGc...';
+     </script>
+     ```
+  5. Chạy game (ví dụ `npx serve .`), mở trang và bấm **Đăng nhập** → **Đăng ký** hoặc **Đăng nhập**. Tiến trình sẽ được lưu lên Supabase và tải lại khi đăng nhập.
 
 ## Công nghệ
 
 - HTML, CSS, JavaScript
 - TensorFlow.js + MobileNet (nhận diện ảnh)
-- Lưu tiến trình: localStorage (offline) + API server (khi đăng nhập)
-- Server: Node.js, Express, JWT, bcrypt; dữ liệu lưu trong `server/data/`
+- Lưu tiến trình: localStorage (offline) + **Supabase** (Auth + Database) khi đăng nhập
+- Thư mục `server/`: API tự host (tùy chọn, không dùng khi dùng Supabase)
