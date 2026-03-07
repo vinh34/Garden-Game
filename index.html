@@ -16,9 +16,13 @@
         <span class="water">💧 Nước: <strong id="water-count">3</strong></span>
         <span class="fertilizer">🌱 Phân: <strong id="fertilizer-count">2</strong></span>
       </div>
-      <div class="weather" id="weather">
-        <span class="weather-icon">☀️</span>
-        <span class="weather-text">Nắng</span>
+      <div class="hud-right">
+        <div class="weather" id="weather">
+          <span class="weather-icon">☀️</span>
+          <span class="weather-text">Nắng</span>
+        </div>
+        <button type="button" class="btn btn-account" id="btn-account" title="Đăng nhập để lưu tiến trình">👤 Đăng nhập</button>
+        <span class="account-info" id="account-info" style="display:none"><span id="account-email"></span> <button type="button" class="btn btn-logout" id="btn-logout">Thoát</button></span>
       </div>
     </header>
 
@@ -87,6 +91,26 @@
     </div>
   </div>
 
+  <!-- Modal đăng nhập / đăng ký -->
+  <div class="modal" id="auth-modal">
+    <div class="modal-content modal-auth">
+      <button class="modal-close" id="auth-modal-close">&times;</button>
+      <h3 id="auth-title">Đăng nhập</h3>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-auth-tab="login">Đăng nhập</button>
+        <button type="button" class="auth-tab" data-auth-tab="register">Đăng ký</button>
+      </div>
+      <form id="auth-form" class="auth-form">
+        <label>Email</label>
+        <input type="email" id="auth-email" required placeholder="email@example.com" autocomplete="email">
+        <label>Mật khẩu</label>
+        <input type="password" id="auth-password" required placeholder="Tối thiểu 6 ký tự" autocomplete="current-password" minlength="6">
+        <p class="auth-message" id="auth-message"></p>
+        <button type="submit" class="btn btn-plant" id="auth-submit">Đăng nhập</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal thông tin cây sau khi quét -->
   <div class="modal" id="plant-info-modal">
     <div class="modal-content modal-plant-info">
@@ -96,8 +120,11 @@
     </div>
   </div>
 
+  <!-- Đổi thành URL server API khi deploy (ví dụ: https://api.example.com) -->
+  <script>window.VUON_API_BASE = window.VUON_API_BASE || 'http://localhost:3001';</script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/data.js"></script>
   <script src="js/camera-ai.js"></script>
   <script src="js/garden.js"></script>

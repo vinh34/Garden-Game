@@ -75,6 +75,76 @@ body {
 .weather.raining .weather-icon { content: '🌧️'; }
 .weather.raining { background: rgba(66, 165, 245, 0.2); }
 
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn-account {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  background: rgba(124, 179, 66, 0.3);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-account:hover { background: rgba(124, 179, 66, 0.5); }
+.account-info {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.account-info #account-email { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.btn-logout {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-logout:hover { background: rgba(239, 83, 80, 0.2); }
+
+/* ===== Auth modal ===== */
+.modal-auth .modal-content { max-width: 360px; }
+.modal-auth h3 { margin-bottom: 12px; }
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.auth-tab.active { background: var(--accent); color: #1a2f1a; }
+.auth-form label { display: block; margin-top: 10px; margin-bottom: 4px; font-size: 0.9rem; }
+.auth-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.2);
+  color: var(--text);
+  font-size: 1rem;
+}
+.auth-form input::placeholder { color: var(--text-muted); }
+.auth-message { margin-top: 10px; font-size: 0.9rem; min-height: 1.2em; }
+.auth-message.success { color: var(--accent); }
+.auth-message.error { color: var(--danger); }
+.modal-auth #auth-submit { width: 100%; margin-top: 16px; }
+
 /* ===== Tabs ===== */
 .tabs {
   display: flex;

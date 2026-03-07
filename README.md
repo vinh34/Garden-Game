@@ -15,12 +15,15 @@ Game web: quét camera trái cây/cây → AI nhận diện → nhận hạt gi�
 ## Chạy game
 
 - Cần **HTTPS** hoặc **localhost** để trình duyệt cho phép camera.
-- Mở bằng server local, ví dụ:
-  - `npx serve .` rồi mở http://localhost:3000
-  - Hoặc dùng extension Live Server (VS Code) với https nếu cần camera trên điện thoại
+- **Chỉ chơi (không đăng nhập):** mở bằng server tĩnh, ví dụ `npx serve .` rồi mở http://localhost:3000. Tiến trình lưu trên máy (localStorage).
+- **Có đăng nhập để lưu tiến trình lên server:**
+  1. Chạy API: `cd server` → `npm install` → `npm start` (mặc định http://localhost:3001).
+  2. Chạy game: từ thư mục gốc `npx serve .` (hoặc port khác), mở http://localhost:3000.
+  3. Trong game bấm **Đăng nhập** → chọn **Đăng ký** (tạo tài khoản) hoặc **Đăng nhập** (email + mật khẩu). Sau khi đăng nhập, tiến trình tự lưu lên server và khi vào lại (cùng tài khoản) sẽ tải bản đã lưu.
 
 ## Công nghệ
 
 - HTML, CSS, JavaScript
 - TensorFlow.js + MobileNet (nhận diện ảnh)
-- Lưu tiến trình trong `localStorage`
+- Lưu tiến trình: localStorage (offline) + API server (khi đăng nhập)
+- Server: Node.js, Express, JWT, bcrypt; dữ liệu lưu trong `server/data/`

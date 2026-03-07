@@ -425,11 +425,25 @@ async function setupScan() {
   });
 }
 
-function loadSave() {
+function getSaveData() {
+  return {
+    state: {
+      money: gameState.money,
+      scanCount: gameState.scanCount,
+      water: gameState.water,
+      fertilizer: gameState.fertilizer,
+      seeds: gameState.seeds,
+      products: gameState.products,
+      weather: gameState.weather,
+      nextWeatherAt: gameState.nextWeatherAt,
+    },
+    garden: (window.gardenState || []).map((c) => c ? { ...c } : null),
+  };
+}
+
+function applySave(data) {
+  if (!data) return;
   try {
-    const raw = localStorage.getItem('vuon_trai_cay_save');
-    if (!raw) return;
-    const data = JSON.parse(raw);
     if (data.state) Object.assign(gameState, data.state);
     if (data.garden && Array.isArray(data.garden) && window.gardenState) {
       const g = window.gardenState;
@@ -439,33 +453,131 @@ function loadSave() {
   } catch (_) {}
 }
 
-function saveGame() {
+function loadSave() {
   try {
-    localStorage.setItem('vuon_trai_cay_save', JSON.stringify({
-      state: {
-        money: gameState.money,
-        scanCount: gameState.scanCount,
-        water: gameState.water,
-        fertilizer: gameState.fertilizer,
-        seeds: gameState.seeds,
-        products: gameState.products,
-        weather: gameState.weather,
-        nextWeatherAt: gameState.nextWeatherAt,
-      },
-      garden: (window.gardenState || []).map((c) => c ? { ...c } : null),
-    }));
+    const raw = localStorage.getItem('vuon_trai_cay_save');
+    if (!raw) return;
+    applySave(JSON.parse(raw));
   } catch (_) {}
 }
 
-function init() {
+function saveGame() {
+  try {
+    const data = getSaveData();
+    localStorage.setItem('vuon_trai_cay_save', JSON.stringify(data));
+    if (typeof saveGameToServer === 'function' && typeof isLoggedIn === 'function' && isLoggedIn()) {
+      saveGameToServer(data).then(() => {}).catch(() => {});
+    }
+  } catch (_) {}
+}
+
+function updateAccountUI() {
+  const btnAccount = document.getElementById('btn-account');
+  const accountInfo = document.getElementById('account-info');
+  const accountEmail = document.getElementById('account-email');
+  if (!btnAccount || !accountInfo) return;
+  if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+    btnAccount.style.display = 'none';
+    accountInfo.style.display = 'flex';
+    if (accountEmail) accountEmail.textContent = getEmail ? getEmail() : '';
+  } else {
+    btnAccount.style.display = 'inline-block';
+    accountInfo.style.display = 'none';
+  }
+}
+
+async function setupAuth() {
+  const authModal = document.getElementById('auth-modal');
+  const authClose = document.getElementById('auth-modal-close');
+  const btnAccount = document.getElementById('btn-account');
+  const btnLogout = document.getElementById('btn-logout');
+  const authForm = document.getElementById('auth-form');
+  const authEmail = document.getElementById('auth-email');
+  const authPassword = document.getElementById('auth-password');
+  const authMessage = document.getElementById('auth-message');
+  const authSubmit = document.getElementById('auth-submit');
+  const authTitle = document.getElementById('auth-title');
+  let currentTab = 'login';
+
+  function setAuthTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.auth-tab').forEach((t) => t.classList.toggle('active', t.dataset.authTab === tab));
+    authTitle.textContent = tab === 'login' ? 'Đăng nhập' : 'Đăng ký';
+    authSubmit.textContent = tab === 'login' ? 'Đăng nhập' : 'Đăng ký';
+    authMessage.textContent = '';
+  }
+
+  document.querySelectorAll('.auth-tab').forEach((t) => {
+    t.addEventListener('click', () => setAuthTab(t.dataset.authTab));
+  });
+
+  authClose?.addEventListener('click', () => authModal?.classList.remove('active'));
+  authModal?.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('active'); });
+
+  btnAccount?.addEventListener('click', () => {
+    setAuthTab('login');
+    authMessage.textContent = '';
+    authModal?.classList.add('active');
+  });
+
+  btnLogout?.addEventListener('click', () => {
+    if (typeof logout === 'function') logout();
+    updateAccountUI();
+  });
+
+  authForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = authEmail?.value?.trim() || '';
+    const password = authPassword?.value || '';
+    authMessage.textContent = 'Đang xử lý...';
+    authMessage.classList.remove('success', 'error');
+    authSubmit.disabled = true;
+    try {
+      if (currentTab === 'register') {
+        await register(email, password);
+        authMessage.textContent = 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
+      } else {
+        await login(email, password);
+        const serverSave = await loadSaveFromServer();
+        if (serverSave) applySave(serverSave); else loadSave();
+        renderGarden();
+        renderInventory();
+        renderShop();
+        updateHUD();
+        authMessage.textContent = 'Đăng nhập thành công. Đã tải tiến trình đã lưu.';
+      }
+      authMessage.classList.add('success');
+      updateAccountUI();
+      setTimeout(() => { authModal?.classList.remove('active'); }, 1200);
+    } catch (err) {
+      authMessage.textContent = err.message || 'Có lỗi xảy ra';
+      authMessage.classList.add('error');
+    }
+    authSubmit.disabled = false;
+  });
+
+  updateAccountUI();
+}
+
+async function init() {
   initGarden();
-  loadSave();
+  if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof loadSaveFromServer === 'function') {
+    try {
+      const serverSave = await loadSaveFromServer();
+      if (serverSave) applySave(serverSave); else loadSave();
+    } catch (_) {
+      loadSave();
+    }
+  } else {
+    loadSave();
+  }
   updateHUD();
   renderGarden();
   renderShop();
   renderInventory();
   setupTabs();
   setupModalClose();
+  setupAuth();
   setupScan();
 
   setInterval(gameTick, TICK_INTERVAL_MS);
