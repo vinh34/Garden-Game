@@ -23,6 +23,18 @@ const IMAGENET_TO_SEED = {
   989: 'tang_hoa', // rose hip
 };
 
+// Map COCO-SSD (object detection) -> seedId trong game
+// COCO-SSD thường bắt vật thể trái cây chính xác hơn phân loại tổng quát.
+const COCO_TO_SEED = {
+  apple: 'tao',
+  banana: 'chuoi',
+  orange: 'cam',
+  broccoli: 'broccoli',
+  carrot: 'ca_rot',
+  'hot dog': null,
+  pizza: null,
+};
+
 // Map từ className (chuỗi từ MobileNet) sang seedId
 const CLASSNAME_TO_SEED = [
   ['granny smith', 'apple', 'tao'], ['strawberry', 'dau_tay'], ['orange', 'cam'], ['lemon', 'chanh'],

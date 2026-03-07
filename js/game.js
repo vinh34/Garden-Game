@@ -289,7 +289,11 @@ async function setupScan() {
   const resultEl = document.getElementById('scan-result');
   if (!video || !btn || !resultEl) return;
 
+  // Tải AI: MobileNet + COCO-SSD
   await loadModel();
+  if (typeof loadDetector === 'function') {
+    try { await loadDetector(); } catch (_) {}
+  }
   btn.textContent = 'Quét';
   btn.disabled = false;
 

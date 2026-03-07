@@ -124,10 +124,13 @@
   <script>
     window.SUPABASE_URL = window.SUPABASE_URL || 'https://xqsqyfaqxcllebuqolxw.supabase.co';     // https://xxxxx.supabase.co
     window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhxc3F5ZmFxeGNsbGVidXFvbHh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NTg3OTQsImV4cCI6MjA4ODQzNDc5NH0.ir9CZOBSM85INJieC38X-8bFgx1oVOIyjcZwS60sFek'; // anon public key
+    // AI server Python (Render). Nếu để trống thì game dùng AI chạy trong trình duyệt.
+    window.AI_API_BASE = window.AI_API_BASE || ''; // ví dụ: https://your-ai.onrender.com
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/data.js"></script>
   <script src="js/camera-ai.js"></script>

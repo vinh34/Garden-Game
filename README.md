@@ -29,9 +29,20 @@ Game web: quét camera trái cây/cây → AI nhận diện → nhận hạt gi�
      ```
   5. Chạy game (ví dụ `npx serve .`), mở trang và bấm **Đăng nhập** → **Đăng ký** hoặc **Đăng nhập**. Tiến trình sẽ được lưu lên Supabase và tải lại khi đăng nhập.
 
+- **AI Python (Render) để nhận diện chuẩn hơn khi deploy GitHub Pages:**
+  1. Deploy thư mục `ai-server/` lên Render theo hướng dẫn `ai-server/render.md`.
+  2. Lấy URL Render (ví dụ `https://your-ai.onrender.com`) và đặt trong `index.html`:
+     ```html
+     <script>
+       window.AI_API_BASE = 'https://your-ai.onrender.com';
+     </script>
+     ```
+  3. (Khuyến nghị) Set biến môi trường Render `ALLOWED_ORIGINS` = domain GitHub Pages của bạn để CORS chặt hơn.
+
 ## Công nghệ
 
 - HTML, CSS, JavaScript
 - TensorFlow.js + MobileNet (nhận diện ảnh)
 - Lưu tiến trình: localStorage (offline) + **Supabase** (Auth + Database) khi đăng nhập
 - Thư mục `server/`: API tự host (tùy chọn, không dùng khi dùng Supabase)
+- AI server (tùy chọn): Python FastAPI + YOLO, deploy Render, web gọi qua HTTPS
