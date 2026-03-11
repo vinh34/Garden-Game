@@ -1,18 +1,15 @@
-/**
- * Đăng nhập / đăng ký và lưu tiến trình bằng Supabase (Auth + Database)
- * Cấu hình: đặt window.SUPABASE_URL và window.SUPABASE_ANON_KEY trong index.html
- */
 
 const AUTH_TOKEN_KEY = 'vuon_trai_cay_token';
 const AUTH_EMAIL_KEY = 'vuon_trai_cay_email';
 const SAVES_TABLE = 'game_saves';
 
-let supabase = null;
 
 function getSupabase() {
   if (supabase && supabase.auth) return supabase;
   const url = window.SUPABASE_URL || '';
   const key = window.SUPABASE_ANON_KEY || '';
+
+  
   if (!url || !key) return null;
   const supabaseGlobal = window.supabase;
 
@@ -84,9 +81,8 @@ async function login(email, password) {
 async function register(email, password) {
   const sb = getSupabase();
   if (!sb) throw new Error('Chưa cấu hình Supabase. Thêm SUPABASE_URL và SUPABASE_ANON_KEY.');
-  if (!sb.auth || typeof sb.auth.signUp !== 'function') {
-    throw new Error('Supabase Auth chưa sẵn sàng. Vui lòng tải lại trang.');
-  }
+
+  
   const { data, error } = await sb.auth.signUp({
     email: (email || '').trim().toLowerCase(),
     password: password || '',
@@ -155,7 +151,6 @@ async function logout() {
   }
   removeToken();
 }
-
 // Expose auth APIs explicitly on window to avoid missing global bindings across browsers
 window.initAuth = initAuth;
 window.getToken = getToken;
