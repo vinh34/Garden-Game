@@ -469,8 +469,8 @@ function saveGame() {
   try {
     const data = getSaveData();
     localStorage.setItem('vuon_trai_cay_save', JSON.stringify(data));
-    if (typeof saveGameToServer === 'function' && typeof isLoggedIn === 'function' && isLoggedIn()) {
-      saveGameToServer(data).then(() => {}).catch(() => {});
+    if (typeof window.saveGameToServer === 'function' && typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
+      window.saveGameToServer(data).then(() => {}).catch(() => {});
     }
   } catch (_) {}
 }
@@ -480,10 +480,10 @@ function updateAccountUI() {
   const accountInfo = document.getElementById('account-info');
   const accountEmail = document.getElementById('account-email');
   if (!btnAccount || !accountInfo) return;
-  if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+  if (typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
     btnAccount.style.display = 'none';
     accountInfo.style.display = 'flex';
-    if (accountEmail) accountEmail.textContent = getEmail ? getEmail() : '';
+    if (accountEmail) accountEmail.textContent = window.getEmail ? window.getEmail() : '';
   } else {
     btnAccount.style.display = 'inline-block';
     accountInfo.style.display = 'none';
@@ -525,7 +525,7 @@ async function setupAuth() {
   });
 
   btnLogout?.addEventListener('click', () => {
-    if (typeof logout === 'function') logout();
+    if (typeof window.logout === 'function') window.logout();
     updateAccountUI();
   });
 
@@ -538,11 +538,17 @@ async function setupAuth() {
     authSubmit.disabled = true;
     try {
       if (currentTab === 'register') {
-        await register(email, password);
-        authMessage.textContent = 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
+        const registerFn = window.register;
+        if (typeof registerFn !== 'function') throw new Error('Tính năng đăng ký chưa sẵn sàng. Vui lòng tải lại trang.');
+        const registerResult = await registerFn(email, password);
+        authMessage.textContent = registerResult?.requiresEmailConfirmation
+          ? 'Đăng ký thành công. Vui lòng xác thực email rồi đăng nhập.'
+          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
       } else {
-        await login(email, password);
-        const serverSave = await loadSaveFromServer();
+        const loginFn = window.login;
+        if (typeof loginFn !== 'function') throw new Error('Tính năng đăng nhập chưa sẵn sàng. Vui lòng tải lại trang.');
+        await loginFn(email, password);
+        const serverSave = await window.loadSaveFromServer();
         if (serverSave) applySave(serverSave); else loadSave();
         renderGarden();
         renderInventory();
@@ -564,11 +570,11 @@ async function setupAuth() {
 }
 
 async function init() {
-  if (typeof initAuth === 'function') await initAuth();
+  if (typeof window.initAuth === 'function') await window.initAuth();
   initGarden();
-  if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof loadSaveFromServer === 'function') {
+  if (typeof window.isLoggedIn === 'function' && window.isLoggedIn() && typeof window.loadSaveFromServer === 'function') {
     try {
-      const serverSave = await loadSaveFromServer();
+      const serverSave = await window.loadSaveFromServer();
       if (serverSave) applySave(serverSave); else loadSave();
     } catch (_) {
       loadSave();
