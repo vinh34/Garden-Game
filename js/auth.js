@@ -1,18 +1,15 @@
-/**
- * Đăng nhập / đăng ký và lưu tiến trình bằng Supabase (Auth + Database)
- * Cấu hình: đặt window.SUPABASE_URL và window.SUPABASE_ANON_KEY trong index.html
- */
 
 const AUTH_TOKEN_KEY = 'vuon_trai_cay_token';
 const AUTH_EMAIL_KEY = 'vuon_trai_cay_email';
 const SAVES_TABLE = 'game_saves';
 
-let supabase = null;
 
 function getSupabase() {
   if (supabase) return supabase;
   const url = window.SUPABASE_URL || '';
   const key = window.SUPABASE_ANON_KEY || '';
+
+  
   if (!url || !key) return null;
   if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
     supabase = window.supabase.createClient(url, key);
@@ -71,6 +68,8 @@ async function login(email, password) {
 async function register(email, password) {
   const sb = getSupabase();
   if (!sb) throw new Error('Chưa cấu hình Supabase. Thêm SUPABASE_URL và SUPABASE_ANON_KEY.');
+
+  
   const { data, error } = await sb.auth.signUp({
     email: (email || '').trim().toLowerCase(),
     password: password || '',
@@ -83,9 +82,18 @@ async function register(email, password) {
   }
   if (data.session) {
     setToken(data.session.access_token, data.user.email);
-    return { token: data.session.access_token, email: data.user.email };
+    return {
+      token: data.session.access_token,
+      email: data.user.email,
+      requiresEmailConfirmation: false,
+    };
   }
   throw new Error('Đăng ký thành công. Vui lòng kiểm tra email xác thực (nếu bật) hoặc đăng nhập.');
+  return {
+    token: null,
+    email: data.user?.email || (email || '').trim().toLowerCase(),
+    requiresEmailConfirmation: true,
+  };
 }
 
 async function loadSaveFromServer() {

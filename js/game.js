@@ -538,8 +538,10 @@ async function setupAuth() {
     authSubmit.disabled = true;
     try {
       if (currentTab === 'register') {
-        await register(email, password);
-        authMessage.textContent = 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
+        const registerResult = await register(email, password);
+        authMessage.textContent = registerResult?.requiresEmailConfirmation
+          ? 'Đăng ký thành công. Vui lòng xác thực email rồi đăng nhập.'
+          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
       } else {
         await login(email, password);
         const serverSave = await loadSaveFromServer();
