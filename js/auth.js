@@ -4,6 +4,16 @@ const AUTH_EMAIL_KEY = 'vuon_trai_cay_email';
 const SAVES_TABLE = 'game_saves';
 
 
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
 function getSupabase() {
   if (supabase && supabase.auth) return supabase;
   const url = window.SUPABASE_URL || '';
