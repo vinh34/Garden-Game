@@ -73,7 +73,6 @@ async function register(email, password) {
   const { data, error } = await sb.auth.signUp({
     email: (email || '').trim().toLowerCase(),
     password: password || '',
-    options: { emailRedirectTo: undefined },
   });
   if (error) {
     const msg = error.message || '';
@@ -88,7 +87,6 @@ async function register(email, password) {
       requiresEmailConfirmation: false,
     };
   }
-  throw new Error('Đăng ký thành công. Vui lòng kiểm tra email xác thực (nếu bật) hoặc đăng nhập.');
   return {
     token: null,
     email: data.user?.email || (email || '').trim().toLowerCase(),
@@ -140,3 +138,15 @@ async function logout() {
   }
   removeToken();
 }
+// Expose auth APIs explicitly on window to avoid missing global bindings across browsers
+window.initAuth = initAuth;
+window.getToken = getToken;
+window.setToken = setToken;
+window.removeToken = removeToken;
+window.getEmail = getEmail;
+window.isLoggedIn = isLoggedIn;
+window.login = login;
+window.register = register;
+window.loadSaveFromServer = loadSaveFromServer;
+window.saveGameToServer = saveGameToServer;
+window.logout = logout;
