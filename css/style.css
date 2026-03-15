@@ -574,24 +574,3 @@ body {
   text-align: center;
 }
 
-
-.btn-quiz {
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  background: rgba(103, 58, 183, 0.25);
-  color: var(--text);
-  border: 1px solid #9575cd;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.btn-quiz:hover { background: rgba(103, 58, 183, 0.4); }
-
-.modal-quiz { max-width: 560px; }
-.quiz-meta { color: var(--text-muted); margin-bottom: 8px; }
-.quiz-question { font-size: 1.02rem; margin-bottom: 12px; line-height: 1.45; }
-.quiz-options { display: grid; gap: 8px; }
-.quiz-option { text-align: left; }
-.quiz-message { min-height: 1.2em; margin: 12px 0; font-weight: 600; }
-.quiz-message.success { color: var(--accent); }
-.quiz-message.error { color: var(--danger); }
-#quiz-next { width: 100%; }
