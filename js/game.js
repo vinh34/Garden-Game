@@ -5,6 +5,9 @@
 const TICK_INTERVAL_MS = 2000;
 const WEATHER_CHANGE_MIN_MS = 60000;
 const WEATHER_CHANGE_MAX_MS = 120000;
+const QUIZ_DAILY_KEY = 'vuon_trai_cay_quiz_daily';
+const QUIZ_MAX_CORRECT_PER_DAY = 10;
+const QUIZ_REWARD_MONEY = 15;
 
 let gameState = {
   money: 100,
@@ -627,6 +630,7 @@ async function init() {
   setupModalClose();
   setupIndexCatalog();
   setupAuth();
+  setupQuiz();
   setupScan();
 
   setInterval(gameTick, TICK_INTERVAL_MS);
