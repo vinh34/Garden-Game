@@ -253,12 +253,8 @@ function setupIndexCatalog() {
   const indexBody = document.getElementById('index-seeds-body');
 
   if (!btnIndex || !indexModal || !indexClose || !indexBody) return;
-  if (btnIndex.dataset.boundIndex === '1') return;
 
-  btnIndex.dataset.boundIndex = '1';
-
-  const seedsData = (typeof SEEDS !== 'undefined' && SEEDS) || window.SEEDS || {};
-  const rows = Object.entries(seedsData)
+  const rows = Object.entries(SEEDS || {})
     .sort((a, b) => (a[1]?.name || a[0]).localeCompare((b[1]?.name || b[0]), 'vi'))
     .map(([seedId, cfg]) => {
       const icon = cfg?.icon || '🌱';
@@ -566,7 +562,7 @@ async function setupAuth() {
   });
 
   btnLogout?.addEventListener('click', () => {
-    if (typeof window.logout === 'function') window.logout();
+    if (typeof window.logout === 'function') window.logout();;
     updateAccountUI();
   });
 
@@ -584,7 +580,7 @@ async function setupAuth() {
         const registerResult = await registerFn(email, password);
         authMessage.textContent = registerResult?.requiresEmailConfirmation
           ? 'Đăng ký thành công. Vui lòng xác thực email rồi đăng nhập.'
-          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
+          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';;
       } else {
         const loginFn = window.login;
         if (typeof loginFn !== 'function') throw new Error('Tính năng đăng nhập chưa sẵn sàng. Vui lòng tải lại trang.');
