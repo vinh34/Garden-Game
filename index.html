@@ -21,6 +21,7 @@
           <span class="weather-icon">☀️</span>
           <span class="weather-text">Nắng</span>
         </div>
+        <button type="button" class="btn btn-index" id="btn-index" title="Xem danh mục cây">📚 Index</button>
         <button type="button" class="btn btn-account" id="btn-account" title="Đăng nhập để lưu tiến trình">👤 Đăng nhập</button>
         <span class="account-info" id="account-info" style="display:none"><span id="account-email"></span> <button type="button" class="btn btn-logout" id="btn-logout">Thoát</button></span>
       </div>
@@ -32,6 +33,7 @@
       <button class="tab" data-tab="scan">📷 Quét</button>
       <button class="tab" data-tab="shop">🛒 Cửa hàng</button>
       <button class="tab" data-tab="inventory">🎒 Túi đồ</button>
+      <button class="tab" data-tab="quiz" id="tab-quiz">🧠 Quiz</button>
     </nav>
 
     <!-- Panel Vườn -->
@@ -120,6 +122,44 @@
     </div>
   </div>
 
+
+  <!-- Modal danh mục cây (Index) -->
+  <div class="modal" id="index-modal">
+    <div class="modal-content modal-index">
+      <button class="modal-close" id="index-modal-close">&times;</button>
+      <h3>📚 Danh mục cây trong game</h3>
+      <div class="index-table-wrap">
+        <table class="index-table">
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th>Tên cây</th>
+              <th>Seed ID</th>
+              <th>Thời gian lớn (s)</th>
+              <th>Giá bán</th>
+            </tr>
+          </thead>
+          <tbody id="index-seeds-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Modal trắc nghiệm -->
+  <div class="modal" id="quiz-modal">
+    <div class="modal-content modal-quiz">
+      <button class="modal-close" id="quiz-modal-close">&times;</button>
+      <h3>🧠 Trắc nghiệm cây trái</h3>
+      <p class="quiz-meta" id="quiz-meta"></p>
+      <p class="quiz-question" id="quiz-question"></p>
+      <div class="quiz-options" id="quiz-options"></div>
+      <p class="quiz-message" id="quiz-message"></p>
+      <button type="button" class="btn btn-plant" id="quiz-next">Câu tiếp theo</button>
+    </div>
+  </div>
+
   <!-- Cấu hình Supabase: lấy từ Dashboard → Project Settings → API -->
   <script>
     window.SUPABASE_URL = window.SUPABASE_URL || 'https://xqsqyfaqxcllebuqolxw.supabase.co';     // https://xxxxx.supabase.co
@@ -133,6 +173,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/quiz-data.js"></script>
   <script src="js/camera-ai.js"></script>
   <script src="js/garden.js"></script>
   <script src="js/shop.js"></script>

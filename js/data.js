@@ -181,6 +181,9 @@ const SEEDS = {
   hat_hoa_qua: { name: 'Hạt hồ đào', icon: '🥜', growTime: 188, sellPrice: 52, productKey: 'hat_hoa_qua' },
 };
 
+// Expose seeds catalog for other scripts/components
+window.SEEDS = SEEDS;
+
 /** Thông tin thực tế: cách trồng + thông tin khoa học (popup sau khi quét) */
 const PLANT_INFO = {
   tao: { scientificName: 'Malus domestica', family: 'Rosaceae (Họ Hoa hồng)', planting: 'Trồng táo: cần khí hậu ôn đới, đất tơi thoát nước. Gieo hạt hoặc ghép cành; trồng cách 4–6 m. Tỉa cành, bón NPK, phun thuốc phòng sâu. Thu hoạch khi quả chín vàng/đỏ.', scientific: 'Táo có nguồn gốc Trung Á. Quả giàu vitamin C, chất xơ và chất chống oxy hóa. Có hơn 7.500 giống táo trên thế giới.' },
