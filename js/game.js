@@ -239,7 +239,7 @@ function setupTabs() {
       const target = tab.dataset.tab;
 
       if (target === 'quiz') {
-        document.getElementById('btn-quiz')?.click();
+        if (typeof window.openQuizModal === 'function') window.openQuizModal();
         return;
       }
 
@@ -321,7 +321,7 @@ function setQuizDailyState(state) {
 }
 
 function setupQuiz() {
-  const btnQuiz = document.getElementById('btn-quiz');
+  const tabQuiz = document.getElementById('tab-quiz');
   const quizModal = document.getElementById('quiz-modal');
   const quizClose = document.getElementById('quiz-modal-close');
   const quizMeta = document.getElementById('quiz-meta');
@@ -330,9 +330,9 @@ function setupQuiz() {
   const quizMessage = document.getElementById('quiz-message');
   const quizNext = document.getElementById('quiz-next');
 
-  if (!btnQuiz || !quizModal || !quizClose || !quizMeta || !quizQuestion || !quizOptions || !quizMessage || !quizNext) return;
-  if (btnQuiz.dataset.boundQuiz === '1') return;
-  btnQuiz.dataset.boundQuiz = '1';
+  if (!tabQuiz || !quizModal || !quizClose || !quizMeta || !quizQuestion || !quizOptions || !quizMessage || !quizNext) return;
+  if (tabQuiz.dataset.boundQuiz === '1') return;
+  tabQuiz.dataset.boundQuiz = '1';
 
   const questions = (window.QUIZ_QUESTIONS || []).filter((q) => q && q.question && Array.isArray(q.options) && q.options.length === 4);
   let currentQuestion = null;
@@ -392,12 +392,14 @@ function setupQuiz() {
     });
   }
 
-  btnQuiz.addEventListener('click', () => {
+  function openQuizModal() {
     quizMessage.textContent = '';
     quizMessage.className = 'quiz-message';
     renderQuestion();
     quizModal.classList.add('active');
-  });
+  }
+
+  window.openQuizModal = openQuizModal;
   quizClose.addEventListener('click', () => quizModal.classList.remove('active'));
   quizModal.addEventListener('click', (e) => {
     if (e.target === quizModal) quizModal.classList.remove('active');
