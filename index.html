@@ -21,6 +21,7 @@
           <span class="weather-icon">☀️</span>
           <span class="weather-text">Nắng</span>
         </div>
+        <button type="button" class="btn btn-index" id="btn-index" title="Xem danh mục cây">📚 Index</button>
         <button type="button" class="btn btn-account" id="btn-account" title="Đăng nhập để lưu tiến trình">👤 Đăng nhập</button>
         <span class="account-info" id="account-info" style="display:none"><span id="account-email"></span> <button type="button" class="btn btn-logout" id="btn-logout">Thoát</button></span>
       </div>
@@ -117,6 +118,29 @@
       <button class="modal-close" id="plant-info-close">&times;</button>
       <div id="plant-info-body"></div>
       <button type="button" class="btn btn-plant" id="plant-info-ok">Tuyệt!</button>
+    </div>
+  </div>
+
+
+  <!-- Modal danh mục cây (Index) -->
+  <div class="modal" id="index-modal">
+    <div class="modal-content modal-index">
+      <button class="modal-close" id="index-modal-close">&times;</button>
+      <h3>📚 Danh mục cây trong game</h3>
+      <div class="index-table-wrap">
+        <table class="index-table">
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th>Tên cây</th>
+              <th>Seed ID</th>
+              <th>Thời gian lớn (s)</th>
+              <th>Giá bán</th>
+            </tr>
+          </thead>
+          <tbody id="index-seeds-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
