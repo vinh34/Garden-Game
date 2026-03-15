@@ -633,4 +633,5 @@ async function init() {
   setInterval(saveGame, 10000);
 }
 
+document.addEventListener('DOMContentLoaded', setupIndexCatalog);
 document.addEventListener('DOMContentLoaded', init);
