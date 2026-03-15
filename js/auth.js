@@ -9,15 +9,42 @@ const SAVES_TABLE = 'game_saves';
 
 let supabase = null;
 
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
 function getSupabase() {
-  if (supabase) return supabase;
+  if (isSupabaseClient(supabase)) return supabase;
   const url = window.SUPABASE_URL || '';
   const key = window.SUPABASE_ANON_KEY || '';
   if (!url || !key) return null;
-  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-    supabase = window.supabase.createClient(url, key);
+  const supabaseGlobal = window.supabase;
+
+  // Trường hợp SDK UMD: window.supabase.createClient(...)
+  if (supabaseGlobal && typeof supabaseGlobal.createClient === 'function') {
+    try {
+      const client = supabaseGlobal.createClient(url, key);
+      if (isSupabaseClient(client)) {
+        supabase = client;
+        return supabase;
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Trường hợp global đã là client được tạo sẵn từ nơi khác
+  if (isSupabaseClient(supabaseGlobal)) {
+    supabase = supabaseGlobal;
     return supabase;
   }
+
   return null;
 }
 
@@ -59,6 +86,9 @@ function isLoggedIn() {
 async function login(email, password) {
   const sb = getSupabase();
   if (!sb) throw new Error('Chưa cấu hình Supabase. Thêm SUPABASE_URL và SUPABASE_ANON_KEY.');
+  if (!sb.auth || typeof sb.auth.signInWithPassword !== 'function') {
+    throw new Error('Supabase Auth chưa sẵn sàng. Vui lòng tải lại trang.');
+  }
   const { data, error } = await sb.auth.signInWithPassword({
     email: (email || '').trim().toLowerCase(),
     password: password || '',
@@ -71,10 +101,12 @@ async function login(email, password) {
 async function register(email, password) {
   const sb = getSupabase();
   if (!sb) throw new Error('Chưa cấu hình Supabase. Thêm SUPABASE_URL và SUPABASE_ANON_KEY.');
+  if (!sb.auth || typeof sb.auth.signUp !== 'function') {
+    throw new Error('Supabase Auth chưa sẵn sàng. Vui lòng tải lại trang.');
+  }
   const { data, error } = await sb.auth.signUp({
     email: (email || '').trim().toLowerCase(),
     password: password || '',
-    options: { emailRedirectTo: undefined },
   });
   if (error) {
     const msg = error.message || '';
@@ -83,9 +115,17 @@ async function register(email, password) {
   }
   if (data.session) {
     setToken(data.session.access_token, data.user.email);
-    return { token: data.session.access_token, email: data.user.email };
+    return {
+      token: data.session.access_token,
+      email: data.user.email,
+      requiresEmailConfirmation: false,
+    };
   }
-  throw new Error('Đăng ký thành công. Vui lòng kiểm tra email xác thực (nếu bật) hoặc đăng nhập.');
+  return {
+    token: null,
+    email: data.user?.email || (email || '').trim().toLowerCase(),
+    requiresEmailConfirmation: true,
+  };
 }
 
 async function loadSaveFromServer() {
@@ -132,3 +172,16 @@ async function logout() {
   }
   removeToken();
 }
+
+// Expose auth APIs explicitly on window to avoid missing global bindings across browsers
+window.initAuth = initAuth;
+window.getToken = getToken;
+window.setToken = setToken;
+window.removeToken = removeToken;
+window.getEmail = getEmail;
+window.isLoggedIn = isLoggedIn;
+window.login = login;
+window.register = register;
+window.loadSaveFromServer = loadSaveFromServer;
+window.saveGameToServer = saveGameToServer;
+window.logout = logout;
