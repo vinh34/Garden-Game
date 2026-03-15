@@ -44,8 +44,18 @@ function isSupabaseClient(candidate) {
   );
 }
 
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
 function getSupabase() {
-  if (supabase && supabase.auth) return supabase;
+  if (isSupabaseClient(supabase)) return supabase;
   const url = window.SUPABASE_URL || '';
   const key = window.SUPABASE_ANON_KEY || '';
 
@@ -55,12 +65,19 @@ function getSupabase() {
 
   // Trường hợp SDK UMD: window.supabase.createClient(...)
   if (supabaseGlobal && typeof supabaseGlobal.createClient === 'function') {
-    supabase = supabaseGlobal.createClient(url, key);
-    return (supabase && supabase.auth) ? supabase : null;
+    try {
+      const client = supabaseGlobal.createClient(url, key);
+      if (isSupabaseClient(client)) {
+        supabase = client;
+        return supabase;
+      }
+    } catch (_) {
+      return null;
+    }
   }
 
   // Trường hợp global đã là client được tạo sẵn từ nơi khác
-  if (supabaseGlobal && supabaseGlobal.auth) {
+  if (isSupabaseClient(supabaseGlobal)) {
     supabase = supabaseGlobal;
     return supabase;
   }
@@ -121,8 +138,9 @@ async function login(email, password) {
 async function register(email, password) {
   const sb = getSupabase();
   if (!sb) throw new Error('Chưa cấu hình Supabase. Thêm SUPABASE_URL và SUPABASE_ANON_KEY.');
-
-  
+  if (!sb.auth || typeof sb.auth.signUp !== 'function') {
+    throw new Error('Supabase Auth chưa sẵn sàng. Vui lòng tải lại trang.');
+  }
   const { data, error } = await sb.auth.signUp({
     email: (email || '').trim().toLowerCase(),
     password: password || '',
@@ -191,6 +209,7 @@ async function logout() {
   }
   removeToken();
 }
+
 // Expose auth APIs explicitly on window to avoid missing global bindings across browsers
 window.initAuth = initAuth;
 window.getToken = getToken;

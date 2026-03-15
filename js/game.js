@@ -237,6 +237,12 @@ function setupTabs() {
   document.querySelectorAll('.tab').forEach((tab) => {
     tab.addEventListener('click', () => {
       const target = tab.dataset.tab;
+
+      if (target === 'quiz') {
+        document.getElementById('btn-quiz')?.click();
+        return;
+      }
+
       document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
       document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
       tab.classList.add('active');
@@ -256,8 +262,12 @@ function setupIndexCatalog() {
   const indexBody = document.getElementById('index-seeds-body');
 
   if (!btnIndex || !indexModal || !indexClose || !indexBody) return;
+  if (btnIndex.dataset.boundIndex === '1') return;
 
-  const rows = Object.entries(SEEDS || {})
+  btnIndex.dataset.boundIndex = '1';
+
+  const seedsData = (typeof SEEDS !== 'undefined' && SEEDS) || window.SEEDS || {};
+  const rows = Object.entries(seedsData)
     .sort((a, b) => (a[1]?.name || a[0]).localeCompare((b[1]?.name || b[0]), 'vi'))
     .map(([seedId, cfg]) => {
       const icon = cfg?.icon || '🌱';
@@ -282,6 +292,120 @@ function setupIndexCatalog() {
   indexClose.addEventListener('click', () => indexModal.classList.remove('active'));
   indexModal.addEventListener('click', (e) => {
     if (e.target === indexModal) indexModal.classList.remove('active');
+  });
+}
+
+
+function getTodayKey() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getQuizDailyState() {
+  const today = getTodayKey();
+  try {
+    const raw = localStorage.getItem(QUIZ_DAILY_KEY);
+    const state = raw ? JSON.parse(raw) : null;
+    if (state && state.date === today && Number.isFinite(state.correctCount)) {
+      return { date: today, correctCount: Math.max(0, Math.min(QUIZ_MAX_CORRECT_PER_DAY, state.correctCount)) };
+    }
+  } catch (_) {}
+  return { date: today, correctCount: 0 };
+}
+
+function setQuizDailyState(state) {
+  localStorage.setItem(QUIZ_DAILY_KEY, JSON.stringify(state));
+}
+
+function setupQuiz() {
+  const btnQuiz = document.getElementById('btn-quiz');
+  const quizModal = document.getElementById('quiz-modal');
+  const quizClose = document.getElementById('quiz-modal-close');
+  const quizMeta = document.getElementById('quiz-meta');
+  const quizQuestion = document.getElementById('quiz-question');
+  const quizOptions = document.getElementById('quiz-options');
+  const quizMessage = document.getElementById('quiz-message');
+  const quizNext = document.getElementById('quiz-next');
+
+  if (!btnQuiz || !quizModal || !quizClose || !quizMeta || !quizQuestion || !quizOptions || !quizMessage || !quizNext) return;
+  if (btnQuiz.dataset.boundQuiz === '1') return;
+  btnQuiz.dataset.boundQuiz = '1';
+
+  const questions = (window.QUIZ_QUESTIONS || []).filter((q) => q && q.question && Array.isArray(q.options) && q.options.length === 4);
+  let currentQuestion = null;
+
+  function renderQuestion() {
+    const state = getQuizDailyState();
+    const left = QUIZ_MAX_CORRECT_PER_DAY - state.correctCount;
+    quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${left}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
+
+    if (!questions.length) {
+      quizQuestion.textContent = 'Chưa có dữ liệu câu hỏi.';
+      quizOptions.innerHTML = '';
+      quizNext.disabled = true;
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    currentQuestion = questions[randomIndex];
+    quizQuestion.textContent = currentQuestion.question;
+    quizOptions.innerHTML = currentQuestion.options
+      .map((opt, i) => {
+        const key = ['A', 'B', 'C', 'D'][i];
+        return `<button type="button" class="btn quiz-option" data-quiz-option="${key}"><strong>${key}.</strong> ${opt}</button>`;
+      })
+      .join('');
+
+    if (left <= 0) {
+      quizMessage.textContent = 'Bạn đã hết 10 lượt thưởng hôm nay. Quay lại ngày mai nhé!';
+      quizMessage.className = 'quiz-message error';
+      quizOptions.querySelectorAll('[data-quiz-option]').forEach((btn) => { btn.disabled = true; });
+    }
+
+    quizOptions.querySelectorAll('[data-quiz-option]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const latest = getQuizDailyState();
+        const remaining = QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount;
+        if (remaining <= 0) {
+          quizMessage.textContent = 'Bạn đã hết lượt nhận thưởng hôm nay.';
+          quizMessage.className = 'quiz-message error';
+          return;
+        }
+
+        const picked = btn.dataset.quizOption;
+        if (picked === currentQuestion.answer) {
+          latest.correctCount += 1;
+          setQuizDailyState(latest);
+          gameState.money += QUIZ_REWARD_MONEY;
+          updateHUD();
+          quizMessage.textContent = `Chính xác! +${QUIZ_REWARD_MONEY}💰, còn ${QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount} lượt hôm nay.`;
+          quizMessage.className = 'quiz-message success';
+          quizOptions.querySelectorAll('[data-quiz-option]').forEach((b) => { b.disabled = true; });
+        } else {
+          quizMessage.textContent = 'Sai rồi, bạn không bị trừ lượt. Thử lại hoặc bấm Câu tiếp theo!';
+          quizMessage.className = 'quiz-message error';
+        }
+      });
+    });
+  }
+
+  btnQuiz.addEventListener('click', () => {
+    quizMessage.textContent = '';
+    quizMessage.className = 'quiz-message';
+    renderQuestion();
+    quizModal.classList.add('active');
+  });
+  quizClose.addEventListener('click', () => quizModal.classList.remove('active'));
+  quizModal.addEventListener('click', (e) => {
+    if (e.target === quizModal) quizModal.classList.remove('active');
+  });
+  quizNext.addEventListener('click', () => {
+    quizMessage.textContent = '';
+    quizMessage.className = 'quiz-message';
+    renderQuestion();
   });
 }
 
@@ -565,7 +689,7 @@ async function setupAuth() {
   });
 
   btnLogout?.addEventListener('click', () => {
-    if (typeof window.logout === 'function') window.logout();;
+    if (typeof window.logout === 'function') window.logout();
     updateAccountUI();
   });
 
@@ -583,7 +707,7 @@ async function setupAuth() {
         const registerResult = await registerFn(email, password);
         authMessage.textContent = registerResult?.requiresEmailConfirmation
           ? 'Đăng ký thành công. Vui lòng xác thực email rồi đăng nhập.'
-          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';;
+          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
       } else {
         const loginFn = window.login;
         if (typeof loginFn !== 'function') throw new Error('Tính năng đăng nhập chưa sẵn sàng. Vui lòng tải lại trang.');
