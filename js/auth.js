@@ -1,13 +1,58 @@
-/**
- * Đăng nhập / đăng ký và lưu tiến trình bằng Supabase (Auth + Database)
- * Cấu hình: đặt window.SUPABASE_URL và window.SUPABASE_ANON_KEY trong index.html
- */
 
 const AUTH_TOKEN_KEY = 'vuon_trai_cay_token';
 const AUTH_EMAIL_KEY = 'vuon_trai_cay_email';
 const SAVES_TABLE = 'game_saves';
 
-let supabase = null;
+
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
 
 function isSupabaseClient(candidate) {
   return !!(
@@ -23,6 +68,8 @@ function getSupabase() {
   if (isSupabaseClient(supabase)) return supabase;
   const url = window.SUPABASE_URL || '';
   const key = window.SUPABASE_ANON_KEY || '';
+
+  
   if (!url || !key) return null;
   const supabaseGlobal = window.supabase;
 
