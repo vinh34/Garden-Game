@@ -562,7 +562,7 @@ async function setupAuth() {
   });
 
   btnLogout?.addEventListener('click', () => {
-    if (typeof window.logout === 'function') window.logout();
+    if (typeof window.logout === 'function') window.logout();;
     updateAccountUI();
   });
 
@@ -580,7 +580,7 @@ async function setupAuth() {
         const registerResult = await registerFn(email, password);
         authMessage.textContent = registerResult?.requiresEmailConfirmation
           ? 'Đăng ký thành công. Vui lòng xác thực email rồi đăng nhập.'
-          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
+          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';;
       } else {
         const loginFn = window.login;
         if (typeof loginFn !== 'function') throw new Error('Tính năng đăng nhập chưa sẵn sàng. Vui lòng tải lại trang.');
