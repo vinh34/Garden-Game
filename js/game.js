@@ -233,6 +233,12 @@ function renderInventory() {
   });
 }
 
+
+function removeLegacyTopQuizButton() {
+  const legacyTopQuizBtn = document.querySelector('.hud-right #btn-quiz');
+  if (legacyTopQuizBtn) legacyTopQuizBtn.remove();
+}
+
 function setupTabs() {
   document.querySelectorAll('.tab').forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -753,6 +759,7 @@ async function init() {
   renderShop();
   renderInventory();
   setupTabs();
+  removeLegacyTopQuizButton();
   setupModalClose();
   setupIndexCatalog();
   setupAuth();
