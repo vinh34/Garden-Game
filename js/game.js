@@ -245,6 +245,43 @@ function setupTabs() {
   });
 }
 
+
+function setupIndexCatalog() {
+  const btnIndex = document.getElementById('btn-index');
+  const indexModal = document.getElementById('index-modal');
+  const indexClose = document.getElementById('index-modal-close');
+  const indexBody = document.getElementById('index-seeds-body');
+
+  if (!btnIndex || !indexModal || !indexClose || !indexBody) return;
+
+  const rows = Object.entries(SEEDS || {})
+    .sort((a, b) => (a[1]?.name || a[0]).localeCompare((b[1]?.name || b[0]), 'vi'))
+    .map(([seedId, cfg]) => {
+      const icon = cfg?.icon || '🌱';
+      const name = cfg?.name || seedId;
+      const growTime = typeof cfg?.growTime === 'number' ? cfg.growTime : '-';
+      const sellPrice = typeof cfg?.sellPrice === 'number' ? `${cfg.sellPrice} 💰` : '-';
+      return `
+        <tr>
+          <td>${icon}</td>
+          <td>${name}</td>
+          <td><code>${seedId}</code></td>
+          <td>${growTime}</td>
+          <td>${sellPrice}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  indexBody.innerHTML = rows || '<tr><td colspan="5">Chưa có dữ liệu cây.</td></tr>';
+
+  btnIndex.addEventListener('click', () => indexModal.classList.add('active'));
+  indexClose.addEventListener('click', () => indexModal.classList.remove('active'));
+  indexModal.addEventListener('click', (e) => {
+    if (e.target === indexModal) indexModal.classList.remove('active');
+  });
+}
+
 function setupModalClose() {
   document.getElementById('modal-close')?.addEventListener('click', () => {
     document.getElementById('cell-modal')?.classList.remove('active');
@@ -588,6 +625,7 @@ async function init() {
   renderInventory();
   setupTabs();
   setupModalClose();
+  setupIndexCatalog();
   setupAuth();
   setupScan();
 
