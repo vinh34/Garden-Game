@@ -371,10 +371,13 @@ function setupQuiz() {
       quizOptions.querySelectorAll('[data-quiz-option]').forEach((btn) => { btn.disabled = true; });
     }
 
+    let questionResolved = false;
     quizOptions.querySelectorAll('[data-quiz-option]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        if (questionResolved) return;
         const latest = getQuizDailyState();
-        const remaining = QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount;
+        const countBefore = latest.correctCount;
+        const remaining = QUIZ_MAX_CORRECT_PER_DAY - countBefore;
         if (remaining <= 0) {
           quizMessage.textContent = 'Bạn đã hết lượt nhận thưởng hôm nay.';
           quizMessage.className = 'quiz-message error';
@@ -384,17 +387,20 @@ function setupQuiz() {
         const picked = btn.dataset.quizOption;
 
         if (picked === currentQuestion.answer) {
-          latest.correctCount += 1;
+          latest.correctCount = countBefore + 1;
           setQuizDailyState(latest);
           gameState.money += QUIZ_REWARD_MONEY;
           updateHUD();
+          questionResolved = true;
           const leftNow = QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount;
           quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${leftNow}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
           quizMessage.textContent = `Chính xác! +${QUIZ_REWARD_MONEY}💰, còn ${leftNow} lượt hôm nay.`;
           quizMessage.className = 'quiz-message success';
           quizOptions.querySelectorAll('[data-quiz-option]').forEach((b) => { b.disabled = true; });
         } else {
-          quizMessage.textContent = `Sai rồi! Bạn không bị trừ lượt, vẫn còn ${remaining} lượt hôm nay. Bạn có thể chọn lại.`;
+          const leftNow = QUIZ_MAX_CORRECT_PER_DAY - countBefore;
+          quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${leftNow}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
+          quizMessage.textContent = `Sai rồi! Bạn không bị trừ lượt, vẫn còn ${leftNow} lượt hôm nay. Bạn có thể chọn lại.`;
           quizMessage.className = 'quiz-message error';
         }
       });
