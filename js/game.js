@@ -5,6 +5,9 @@
 const TICK_INTERVAL_MS = 2000;
 const WEATHER_CHANGE_MIN_MS = 60000;
 const WEATHER_CHANGE_MAX_MS = 120000;
+const QUIZ_DAILY_KEY = 'vuon_trai_cay_quiz_daily';
+const QUIZ_MAX_CORRECT_PER_DAY = 10;
+const QUIZ_REWARD_MONEY = 15;
 
 let gameState = {
   money: 100,
@@ -230,10 +233,22 @@ function renderInventory() {
   });
 }
 
+
+function removeLegacyTopQuizButton() {
+  const legacyTopQuizBtn = document.querySelector('.hud-right #btn-quiz');
+  if (legacyTopQuizBtn) legacyTopQuizBtn.remove();
+}
+
 function setupTabs() {
   document.querySelectorAll('.tab').forEach((tab) => {
     tab.addEventListener('click', () => {
       const target = tab.dataset.tab;
+
+      if (target === 'quiz') {
+        if (typeof window.openQuizModal === 'function') window.openQuizModal();
+        return;
+      }
+
       document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
       document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
       tab.classList.add('active');
@@ -242,6 +257,164 @@ function setupTabs() {
       if (target === 'shop') renderShop();
       if (target === 'inventory') renderInventory();
     });
+  });
+}
+
+
+function setupIndexCatalog() {
+  const btnIndex = document.getElementById('btn-index');
+  const indexModal = document.getElementById('index-modal');
+  const indexClose = document.getElementById('index-modal-close');
+  const indexBody = document.getElementById('index-seeds-body');
+
+  if (!btnIndex || !indexModal || !indexClose || !indexBody) return;
+  if (btnIndex.dataset.boundIndex === '1') return;
+
+  btnIndex.dataset.boundIndex = '1';
+
+  const seedsData = (typeof SEEDS !== 'undefined' && SEEDS) || window.SEEDS || {};
+  const rows = Object.entries(seedsData)
+    .sort((a, b) => (a[1]?.name || a[0]).localeCompare((b[1]?.name || b[0]), 'vi'))
+    .map(([seedId, cfg]) => {
+      const icon = cfg?.icon || '🌱';
+      const name = cfg?.name || seedId;
+      const growTime = typeof cfg?.growTime === 'number' ? cfg.growTime : '-';
+      const sellPrice = typeof cfg?.sellPrice === 'number' ? `${cfg.sellPrice} 💰` : '-';
+      return `
+        <tr>
+          <td>${icon}</td>
+          <td>${name}</td>
+          <td><code>${seedId}</code></td>
+          <td>${growTime}</td>
+          <td>${sellPrice}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  indexBody.innerHTML = rows || '<tr><td colspan="5">Chưa có dữ liệu cây.</td></tr>';
+
+  btnIndex.addEventListener('click', () => indexModal.classList.add('active'));
+  indexClose.addEventListener('click', () => indexModal.classList.remove('active'));
+  indexModal.addEventListener('click', (e) => {
+    if (e.target === indexModal) indexModal.classList.remove('active');
+  });
+}
+
+
+function getTodayKey() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getQuizDailyState() {
+  const today = getTodayKey();
+  try {
+    const raw = localStorage.getItem(QUIZ_DAILY_KEY);
+    const state = raw ? JSON.parse(raw) : null;
+    if (state && state.date === today && Number.isFinite(state.correctCount)) {
+      return { date: today, correctCount: Math.max(0, Math.min(QUIZ_MAX_CORRECT_PER_DAY, state.correctCount)) };
+    }
+  } catch (_) {}
+  return { date: today, correctCount: 0 };
+}
+
+function setQuizDailyState(state) {
+  localStorage.setItem(QUIZ_DAILY_KEY, JSON.stringify(state));
+}
+
+function setupQuiz() {
+  const tabQuiz = document.getElementById('tab-quiz');
+  const quizModal = document.getElementById('quiz-modal');
+  const quizClose = document.getElementById('quiz-modal-close');
+  const quizMeta = document.getElementById('quiz-meta');
+  const quizQuestion = document.getElementById('quiz-question');
+  const quizOptions = document.getElementById('quiz-options');
+  const quizMessage = document.getElementById('quiz-message');
+  const quizNext = document.getElementById('quiz-next');
+
+  if (!tabQuiz || !quizModal || !quizClose || !quizMeta || !quizQuestion || !quizOptions || !quizMessage || !quizNext) return;
+  if (tabQuiz.dataset.boundQuiz === '1') return;
+  tabQuiz.dataset.boundQuiz = '1';
+
+  const questions = (window.QUIZ_QUESTIONS || []).filter((q) => q && q.question && Array.isArray(q.options) && q.options.length === 4);
+  let currentQuestion = null;
+
+  function renderQuestion() {
+    const state = getQuizDailyState();
+    const left = QUIZ_MAX_CORRECT_PER_DAY - state.correctCount;
+    quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${left}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
+
+    if (!questions.length) {
+      quizQuestion.textContent = 'Chưa có dữ liệu câu hỏi.';
+      quizOptions.innerHTML = '';
+      quizNext.disabled = true;
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    currentQuestion = questions[randomIndex];
+    quizQuestion.textContent = currentQuestion.question;
+    quizOptions.innerHTML = currentQuestion.options
+      .map((opt, i) => {
+        const key = ['A', 'B', 'C', 'D'][i];
+        return `<button type="button" class="btn quiz-option" data-quiz-option="${key}"><strong>${key}.</strong> ${opt}</button>`;
+      })
+      .join('');
+
+    if (left <= 0) {
+      quizMessage.textContent = 'Bạn đã hết 10 lượt thưởng hôm nay. Quay lại ngày mai nhé!';
+      quizMessage.className = 'quiz-message error';
+      quizOptions.querySelectorAll('[data-quiz-option]').forEach((btn) => { btn.disabled = true; });
+    }
+
+    quizOptions.querySelectorAll('[data-quiz-option]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const latest = getQuizDailyState();
+        const remaining = QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount;
+        if (remaining <= 0) {
+          quizMessage.textContent = 'Bạn đã hết lượt nhận thưởng hôm nay.';
+          quizMessage.className = 'quiz-message error';
+          return;
+        }
+
+        const picked = btn.dataset.quizOption;
+        quizOptions.querySelectorAll('[data-quiz-option]').forEach((b) => { b.disabled = true; });
+
+        if (picked === currentQuestion.answer) {
+          latest.correctCount += 1;
+          setQuizDailyState(latest);
+          gameState.money += QUIZ_REWARD_MONEY;
+          updateHUD();
+          quizMessage.textContent = `Chính xác! +${QUIZ_REWARD_MONEY}💰, còn ${QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount} lượt hôm nay.`;
+          quizMessage.className = 'quiz-message success';
+        } else {
+          quizMessage.textContent = `Sai rồi! Bạn không bị trừ lượt, vẫn còn ${remaining} lượt hôm nay.`;
+          quizMessage.className = 'quiz-message error';
+        }
+      });
+    });
+  }
+
+  function openQuizModal() {
+    quizMessage.textContent = '';
+    quizMessage.className = 'quiz-message';
+    renderQuestion();
+    quizModal.classList.add('active');
+  }
+
+  window.openQuizModal = openQuizModal;
+  quizClose.addEventListener('click', () => quizModal.classList.remove('active'));
+  quizModal.addEventListener('click', (e) => {
+    if (e.target === quizModal) quizModal.classList.remove('active');
+  });
+  quizNext.addEventListener('click', () => {
+    quizMessage.textContent = '';
+    quizMessage.className = 'quiz-message';
+    renderQuestion();
   });
 }
 
@@ -469,8 +642,8 @@ function saveGame() {
   try {
     const data = getSaveData();
     localStorage.setItem('vuon_trai_cay_save', JSON.stringify(data));
-    if (typeof saveGameToServer === 'function' && typeof isLoggedIn === 'function' && isLoggedIn()) {
-      saveGameToServer(data).then(() => {}).catch(() => {});
+    if (typeof window.saveGameToServer === 'function' && typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
+      window.saveGameToServer(data).then(() => {}).catch(() => {});
     }
   } catch (_) {}
 }
@@ -480,10 +653,10 @@ function updateAccountUI() {
   const accountInfo = document.getElementById('account-info');
   const accountEmail = document.getElementById('account-email');
   if (!btnAccount || !accountInfo) return;
-  if (typeof isLoggedIn === 'function' && isLoggedIn()) {
+  if (typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
     btnAccount.style.display = 'none';
     accountInfo.style.display = 'flex';
-    if (accountEmail) accountEmail.textContent = getEmail ? getEmail() : '';
+    if (accountEmail) accountEmail.textContent = window.getEmail ? window.getEmail() : '';
   } else {
     btnAccount.style.display = 'inline-block';
     accountInfo.style.display = 'none';
@@ -525,7 +698,7 @@ async function setupAuth() {
   });
 
   btnLogout?.addEventListener('click', () => {
-    if (typeof logout === 'function') logout();
+    if (typeof window.logout === 'function') window.logout();
     updateAccountUI();
   });
 
@@ -538,11 +711,17 @@ async function setupAuth() {
     authSubmit.disabled = true;
     try {
       if (currentTab === 'register') {
-        await register(email, password);
-        authMessage.textContent = 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
+        const registerFn = window.register;
+        if (typeof registerFn !== 'function') throw new Error('Tính năng đăng ký chưa sẵn sàng. Vui lòng tải lại trang.');
+        const registerResult = await registerFn(email, password);
+        authMessage.textContent = registerResult?.requiresEmailConfirmation
+          ? 'Đăng ký thành công. Vui lòng xác thực email rồi đăng nhập.'
+          : 'Đăng ký thành công. Tiến trình sẽ được lưu lên tài khoản.';
       } else {
-        await login(email, password);
-        const serverSave = await loadSaveFromServer();
+        const loginFn = window.login;
+        if (typeof loginFn !== 'function') throw new Error('Tính năng đăng nhập chưa sẵn sàng. Vui lòng tải lại trang.');
+        await loginFn(email, password);
+        const serverSave = await window.loadSaveFromServer();
         if (serverSave) applySave(serverSave); else loadSave();
         renderGarden();
         renderInventory();
@@ -564,11 +743,11 @@ async function setupAuth() {
 }
 
 async function init() {
-  if (typeof initAuth === 'function') await initAuth();
+  if (typeof window.initAuth === 'function') await window.initAuth();
   initGarden();
-  if (typeof isLoggedIn === 'function' && isLoggedIn() && typeof loadSaveFromServer === 'function') {
+  if (typeof window.isLoggedIn === 'function' && window.isLoggedIn() && typeof window.loadSaveFromServer === 'function') {
     try {
-      const serverSave = await loadSaveFromServer();
+      const serverSave = await window.loadSaveFromServer();
       if (serverSave) applySave(serverSave); else loadSave();
     } catch (_) {
       loadSave();
@@ -581,12 +760,16 @@ async function init() {
   renderShop();
   renderInventory();
   setupTabs();
+  removeLegacyTopQuizButton();
   setupModalClose();
+  setupIndexCatalog();
   setupAuth();
+  setupQuiz();
   setupScan();
 
   setInterval(gameTick, TICK_INTERVAL_MS);
   setInterval(saveGame, 10000);
 }
 
+document.addEventListener('DOMContentLoaded', setupIndexCatalog);
 document.addEventListener('DOMContentLoaded', init);
