@@ -84,6 +84,16 @@ function isSupabaseClient(candidate) {
   );
 }
 
+function isSupabaseClient(candidate) {
+  return !!(
+    candidate
+    && candidate.auth
+    && typeof candidate.auth.signUp === 'function'
+    && typeof candidate.auth.signInWithPassword === 'function'
+    && typeof candidate.auth.getUser === 'function'
+  );
+}
+
 function getSupabase() {
   if (isSupabaseClient(supabase)) return supabase;
   const url = window.SUPABASE_URL || '';

@@ -315,11 +315,14 @@ function getQuizDailyState() {
   try {
     const raw = localStorage.getItem(QUIZ_DAILY_KEY);
     const state = raw ? JSON.parse(raw) : null;
-    if (state && state.date === today && Number.isFinite(state.correctCount)) {
-      return { date: today, correctCount: Math.max(0, Math.min(QUIZ_MAX_CORRECT_PER_DAY, state.correctCount)) };
+    if (state && state.date === today) {
+      const answered = Number.isFinite(state.answeredCount)
+        ? state.answeredCount
+        : (Number.isFinite(state.correctCount) ? state.correctCount : 0);
+      return { date: today, answeredCount: Math.max(0, Math.min(QUIZ_MAX_CORRECT_PER_DAY, answered)) };
     }
   } catch (_) {}
-  return { date: today, correctCount: 0 };
+  return { date: today, answeredCount: 0 };
 }
 
 function setQuizDailyState(state) {
@@ -345,8 +348,8 @@ function setupQuiz() {
 
   function renderQuestion() {
     const state = getQuizDailyState();
-    const left = QUIZ_MAX_CORRECT_PER_DAY - state.correctCount;
-    quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${left}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
+    const left = QUIZ_MAX_CORRECT_PER_DAY - state.answeredCount;
+    quizMeta.textContent = `Lượt trả lời còn lại hôm nay: ${left}/${QUIZ_MAX_CORRECT_PER_DAY} · Trả lời đúng +${QUIZ_REWARD_MONEY}💰`;
 
     if (!questions.length) {
       quizQuestion.textContent = 'Chưa có dữ liệu câu hỏi.';
@@ -376,7 +379,7 @@ function setupQuiz() {
       btn.addEventListener('click', () => {
         if (questionResolved) return;
         const latest = getQuizDailyState();
-        const countBefore = latest.correctCount;
+        const countBefore = latest.answeredCount;
         const remaining = QUIZ_MAX_CORRECT_PER_DAY - countBefore;
         if (remaining <= 0) {
           quizMessage.textContent = 'Bạn đã hết lượt nhận thưởng hôm nay.';
@@ -386,23 +389,25 @@ function setupQuiz() {
 
         const picked = btn.dataset.quizOption;
 
-        if (picked === currentQuestion.answer) {
-          latest.correctCount = countBefore + 1;
-          setQuizDailyState(latest);
+        const isCorrect = picked === currentQuestion.answer;
+        latest.answeredCount = countBefore + 1;
+        setQuizDailyState(latest);
+        questionResolved = true;
+
+        const leftNow = QUIZ_MAX_CORRECT_PER_DAY - latest.answeredCount;
+        quizMeta.textContent = `Lượt trả lời còn lại hôm nay: ${leftNow}/${QUIZ_MAX_CORRECT_PER_DAY} · Trả lời đúng +${QUIZ_REWARD_MONEY}💰`;
+
+        if (isCorrect) {
           gameState.money += QUIZ_REWARD_MONEY;
           updateHUD();
-          questionResolved = true;
-          const leftNow = QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount;
-          quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${leftNow}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
           quizMessage.textContent = `Chính xác! +${QUIZ_REWARD_MONEY}💰, còn ${leftNow} lượt hôm nay.`;
           quizMessage.className = 'quiz-message success';
-          quizOptions.querySelectorAll('[data-quiz-option]').forEach((b) => { b.disabled = true; });
         } else {
-          const leftNow = QUIZ_MAX_CORRECT_PER_DAY - countBefore;
-          quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${leftNow}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
-          quizMessage.textContent = `Sai rồi! Bạn không bị trừ lượt, vẫn còn ${leftNow} lượt hôm nay. Bạn có thể chọn lại.`;
+          quizMessage.textContent = `Sai rồi! Bạn đã mất 1 lượt, còn ${leftNow} lượt hôm nay.`;
           quizMessage.className = 'quiz-message error';
         }
+
+        quizOptions.querySelectorAll('[data-quiz-option]').forEach((b) => { b.disabled = true; });
       });
     });
   }
