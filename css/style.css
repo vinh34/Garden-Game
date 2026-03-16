@@ -585,3 +585,9 @@ body {
 .quiz-message.success { color: var(--accent); }
 .quiz-message.error { color: var(--danger); }
 #quiz-next { width: 100%; }
+
+
+.modal-tutorial { max-width: 620px; }
+.tutorial-list { padding-left: 20px; line-height: 1.6; color: var(--text); }
+.tutorial-list li { margin-bottom: 8px; }
+#tutorial-ok { width: 100%; margin-top: 12px; }

@@ -8,6 +8,7 @@ const WEATHER_CHANGE_MAX_MS = 120000;
 const QUIZ_DAILY_KEY = 'vuon_trai_cay_quiz_daily';
 const QUIZ_MAX_CORRECT_PER_DAY = 10;
 const QUIZ_REWARD_MONEY = 15;
+const TUTORIAL_SEEN_KEY_PREFIX = 'vuon_trai_cay_tutorial_seen_';
 
 let gameState = {
   money: 100,
@@ -661,6 +662,39 @@ function saveGame() {
   } catch (_) {}
 }
 
+
+function getTutorialSeenKeyByEmail(email) {
+  return TUTORIAL_SEEN_KEY_PREFIX + encodeURIComponent((email || '').trim().toLowerCase());
+}
+
+function setupTutorialModal() {
+  const tutorialModal = document.getElementById('tutorial-modal');
+  const tutorialClose = document.getElementById('tutorial-close');
+  const tutorialOk = document.getElementById('tutorial-ok');
+  if (!tutorialModal || !tutorialClose || !tutorialOk) return;
+  if (tutorialModal.dataset.boundTutorial === '1') return;
+  tutorialModal.dataset.boundTutorial = '1';
+
+  tutorialClose.addEventListener('click', () => tutorialModal.classList.remove('active'));
+  tutorialOk.addEventListener('click', () => tutorialModal.classList.remove('active'));
+  tutorialModal.addEventListener('click', (e) => {
+    if (e.target === tutorialModal) tutorialModal.classList.remove('active');
+  });
+}
+
+function maybeShowFirstLoginTutorial() {
+  if (!(typeof window.isLoggedIn === 'function' && window.isLoggedIn())) return;
+  const email = (typeof window.getEmail === 'function' ? window.getEmail() : '').trim().toLowerCase();
+  if (!email) return;
+  const tutorialModal = document.getElementById('tutorial-modal');
+  if (!tutorialModal) return;
+
+  const seenKey = getTutorialSeenKeyByEmail(email);
+  if (localStorage.getItem(seenKey) === '1') return;
+  localStorage.setItem(seenKey, '1');
+  tutorialModal.classList.add('active');
+}
+
 function updateAccountUI() {
   const btnAccount = document.getElementById('btn-account');
   const accountInfo = document.getElementById('account-info');
@@ -741,6 +775,7 @@ async function setupAuth() {
         renderShop();
         updateHUD();
         authMessage.textContent = 'Đăng nhập thành công. Đã tải tiến trình đã lưu.';
+        setTimeout(() => { maybeShowFirstLoginTutorial(); }, 350);
       }
       authMessage.classList.add('success');
       updateAccountUI();
@@ -775,10 +810,12 @@ async function init() {
   setupTabs();
   removeLegacyTopQuizButton();
   setupModalClose();
+  setupTutorialModal();
   setupIndexCatalog();
   setupAuth();
   setupQuiz();
   setupScan();
+  setTimeout(() => { maybeShowFirstLoginTutorial(); }, 300);
 
   setInterval(gameTick, TICK_INTERVAL_MS);
   setInterval(saveGame, 10000);

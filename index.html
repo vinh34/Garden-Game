@@ -160,6 +160,25 @@
     </div>
   </div>
 
+
+
+  <!-- Modal hướng dẫn người chơi mới -->
+  <div class="modal" id="tutorial-modal">
+    <div class="modal-content modal-tutorial">
+      <button class="modal-close" id="tutorial-close">&times;</button>
+      <h3>🌱 Hướng dẫn chơi cho người mới</h3>
+      <ol class="tutorial-list">
+        <li><strong>Quét cây/trái</strong> ở tab <em>📷 Quét</em> để nhận hạt giống.</li>
+        <li>Vào tab <em>🌳 Vườn</em>, bấm ô đất trống để <strong>trồng hạt</strong>.</li>
+        <li>Chăm cây bằng <strong>💧 Nước</strong> và <strong>🌱 Phân</strong> để cây lớn nhanh.</li>
+        <li>Khi cây chín, <strong>thu hoạch</strong> để lấy sản phẩm.</li>
+        <li>Vào <em>🛒 Cửa hàng</em> / <em>🎒 Túi đồ</em> để bán sản phẩm và nâng cấp vật phẩm.</li>
+        <li>Dùng <em>📚 Index</em> để xem danh mục cây và <em>🧠 Quiz</em> để kiếm thêm tiền.</li>
+      </ol>
+      <button type="button" class="btn btn-plant" id="tutorial-ok">Đã hiểu, bắt đầu chơi!</button>
+    </div>
+  </div>
+
   <!-- Cấu hình Supabase: lấy từ Dashboard → Project Settings → API -->
   <script>
     window.SUPABASE_URL = window.SUPABASE_URL || 'https://xqsqyfaqxcllebuqolxw.supabase.co';     // https://xxxxx.supabase.co
@@ -177,7 +196,7 @@
   <script src="js/camera-ai.js"></script>
   <script src="js/garden.js"></script>
   <script src="js/shop.js"></script>
-  <script src="js/game.js?v=20260316b"></script>
+  <script src="js/game.js?v=20260316c"></script>
 </body>
 <footer>
   <p>Tác giả: nhóm đẳng cấp nhứt(Vinh, Điền, Phúc, Kiệt, Kang, Huynh)</p>
