@@ -327,7 +327,7 @@ const DRY_THRESHOLD = 20;            // dưới 20% nước thì không lớn
 const SHOP_ITEMS = [
   { id: 'water',     name: 'Nước',      icon: '💧', price: 10,  desc: 'Tưới cây', amount: 3 },
   { id: 'fertilizer', name: 'Phân bón', icon: '🌱', price: 25,  desc: 'Bón cho cây lớn nhanh', amount: 2 },
-  { id: 'scan',      name: 'Lượt quét', icon: '📷', price: 50,  desc: 'Thêm 1 lượt quét camera', amount: 1 },
+  { id: 'scan',      name: 'Lượt quét', icon: '📷', price: 30,  desc: 'Thêm 1 lượt quét camera', amount: 1 },
 ];
 
 function getProductName(key) {
