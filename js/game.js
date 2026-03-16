@@ -382,17 +382,19 @@ function setupQuiz() {
         }
 
         const picked = btn.dataset.quizOption;
-        quizOptions.querySelectorAll('[data-quiz-option]').forEach((b) => { b.disabled = true; });
 
         if (picked === currentQuestion.answer) {
           latest.correctCount += 1;
           setQuizDailyState(latest);
           gameState.money += QUIZ_REWARD_MONEY;
           updateHUD();
-          quizMessage.textContent = `Chính xác! +${QUIZ_REWARD_MONEY}💰, còn ${QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount} lượt hôm nay.`;
+          const leftNow = QUIZ_MAX_CORRECT_PER_DAY - latest.correctCount;
+          quizMeta.textContent = `Lượt đúng còn lại hôm nay: ${leftNow}/${QUIZ_MAX_CORRECT_PER_DAY} · Mỗi câu đúng +${QUIZ_REWARD_MONEY}💰`;
+          quizMessage.textContent = `Chính xác! +${QUIZ_REWARD_MONEY}💰, còn ${leftNow} lượt hôm nay.`;
           quizMessage.className = 'quiz-message success';
+          quizOptions.querySelectorAll('[data-quiz-option]').forEach((b) => { b.disabled = true; });
         } else {
-          quizMessage.textContent = `Sai rồi! Bạn không bị trừ lượt, vẫn còn ${remaining} lượt hôm nay.`;
+          quizMessage.textContent = `Sai rồi! Bạn không bị trừ lượt, vẫn còn ${remaining} lượt hôm nay. Bạn có thể chọn lại.`;
           quizMessage.className = 'quiz-message error';
         }
       });
